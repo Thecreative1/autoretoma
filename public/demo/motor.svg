@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-label="Motor - imagem de demonstracao">
+  <rect width="800" height="600" fill="#E3EAF3"/>
+  <g fill="#33538A" opacity="0.9">
+    <path d="M170 340 q10 -50 60 -62 l60 -14 q30 -36 78 -36 h80 q48 0 86 34 l58 16 q52 14 60 62 l4 26 q2 14 -12 14 h-16 a44 44 0 0 0 -88 0 h-252 a44 44 0 0 0 -88 0 h-18 q-14 0 -14 -14 z"/>
+    <circle cx="284" cy="384" r="30"/>
+    <circle cx="580" cy="384" r="30"/>
+  </g>
+  
+  <text x="400" y="480" font-family="Arial, sans-serif" font-size="34" font-weight="bold" fill="#33538A" text-anchor="middle">Motor</text>
+  <text x="400" y="520" font-family="Arial, sans-serif" font-size="20" fill="#33538A" opacity="0.7" text-anchor="middle">Imagem de demonstracao</text>
+</svg>
