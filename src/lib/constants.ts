@@ -161,3 +161,38 @@ export const PAGE_SIZE = 12;
 
 // Estados de anúncio visíveis ao público
 export const PUBLIC_LISTING_STATUSES: ListingStatus[] = ["publicado", "reservado", "vendido"];
+
+/**
+ * Nem todos os problemas se fotografam: uma embraiagem gasta está dentro da
+ * campânula, um consumo de óleo não se vê. Para essas áreas não faz sentido
+ * exigir — nem sugerir — fotografia do defeito; o que dá confiança ao comprador
+ * é o diagnóstico ou o orçamento da oficina.
+ */
+export const AREA_PHOTO_EXPECTED: Record<ConditionArea, boolean> = {
+  carrocaria_pintura: true,
+  pneus: true,
+  interior: true,
+  documentacao: true,
+  eletronica: false,
+  travoes: false,
+  motor_mecanica: false,
+  embraiagem_caixa: false,
+  outros: false,
+};
+
+export const AREA_PHOTO_HINT: Record<ConditionArea, string> = {
+  carrocaria_pintura:
+    "Fotografe a zona afetada. Uma amolgadela vista de perto evita discussões sobre o tamanho.",
+  pneus: "Fotografe o piso do pneu, onde se vê o desgaste.",
+  interior: "Fotografe a zona danificada.",
+  documentacao: "Fotografe o documento em causa. Pode tapar dados pessoais.",
+  eletronica:
+    "Se houver luz acesa no painel, fotografe o quadrante. Caso contrário, descreva bem o sintoma.",
+  travoes:
+    "Se o desgaste for visível, fotografe. Caso contrário, junte o orçamento ou o diagnóstico da oficina.",
+  motor_mecanica:
+    "Fugas e danos visíveis fotografam-se. Avarias internas não — nesses casos vale mais juntar o diagnóstico da oficina.",
+  embraiagem_caixa:
+    "Este tipo de avaria não se fotografa. Se tiver diagnóstico ou orçamento de oficina, junte-o; senão, descreva o sintoma com detalhe.",
+  outros: "Fotografe o que for visível, ou junte documentação relevante.",
+};

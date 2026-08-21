@@ -16,12 +16,14 @@ import { createClient } from "@/lib/supabase/client";
 import { compressImage, validateImage } from "@/lib/image";
 import {
   AREA_LABELS,
+  AREA_PHOTO_EXPECTED,
+  AREA_PHOTO_HINT,
   CONDITION_AREAS,
   CONDITION_STATUS_META,
   SEVERITY_META,
 } from "@/lib/constants";
 import { formatPrice } from "@/lib/utils";
-import type { ConditionStatus, ListingCondition, ListingIssue } from "@/lib/types";
+import type { ConditionArea, ConditionStatus, ListingCondition, ListingIssue } from "@/lib/types";
 
 function ConditionsSubmit() {
   const { pending } = useFormStatus();
@@ -53,6 +55,7 @@ export function Step3Conditions({
   const [issueMessage, setIssueMessage] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
+  const [issueArea, setIssueArea] = useState<ConditionArea | "">("");
   const [, startTransition] = useTransition();
 
   const formRef = useRef<HTMLFormElement>(null);
@@ -138,6 +141,7 @@ export function Step3Conditions({
       }
 
       form.reset();
+      setIssueArea("");
       setPreview(null);
       if (fileRef.current) fileRef.current.value = "";
       setShowIssueForm(false);
@@ -203,8 +207,8 @@ export function Step3Conditions({
           <div>
             <h3 className="font-heading text-lg font-bold">Problemas declarados</h3>
             <p className="mt-1 text-sm text-brand-600">
-              Descreva cada problema conhecido e junte-lhe uma fotografia. Declarar
-              problemas é o que distingue a AutoRetoma — não os omita.
+              Descreva cada problema conhecido. Junte fotografia quando o defeito
+              for visível — é o que distingue a AutoRetoma dos outros sites.
             </p>
           </div>
           {!showIssueForm && (
@@ -243,7 +247,7 @@ export function Step3Conditions({
                       >
                         {issue.prevents_driving ? "Impede a circulação" : "O carro circula"}
                       </span>
-                      {!issue.photo_url && (
+                      {!issue.photo_url && AREA_PHOTO_EXPECTED[issue.area] && (
                         <span className="badge bg-amber-100 text-amber-800">Sem fotografia</span>
                       )}
                     </div>
@@ -281,7 +285,11 @@ export function Step3Conditions({
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <label htmlFor="area" className="label">Área *</label>
-                <select id="area" name="area" required className="input" defaultValue="">
+                <select
+                  id="area" name="area" required className="input"
+                  value={issueArea}
+                  onChange={(e) => setIssueArea(e.target.value as ConditionArea)}
+                >
                   <option value="" disabled>Escolha a área</option>
                   {CONDITION_AREAS.map((a) => (
                     <option key={a.value} value={a.value}>{a.label}</option>
@@ -323,7 +331,9 @@ export function Step3Conditions({
             {/* Fotografia carregada aqui mesmo, sem sair do passo */}
             <div className="rounded-lg border border-dashed border-brand-300 bg-brand-50 p-4">
               <label htmlFor="issue-photo" className="label">
-                Fotografia deste problema
+                {issueArea && !AREA_PHOTO_EXPECTED[issueArea]
+                  ? "Fotografia ou documento (opcional)"
+                  : "Fotografia deste problema"}
               </label>
               <input
                 ref={fileRef}
@@ -335,8 +345,9 @@ export function Step3Conditions({
                 className="block w-full text-sm text-brand-700 file:mr-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-accent-500 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-accent-600 disabled:opacity-60"
               />
               <p className="mt-1.5 text-xs text-brand-600">
-                Uma fotografia clara do defeito evita deslocações inúteis e perguntas
-                repetidas. Fica também na galeria do anúncio, assinalada como defeito.
+                {issueArea
+                  ? AREA_PHOTO_HINT[issueArea]
+                  : "Escolha primeiro a área para saber o que vale a pena fotografar."}
               </p>
 
               {preview && (
