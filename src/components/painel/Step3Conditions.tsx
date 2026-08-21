@@ -1,15 +1,19 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useRef, useState, useTransition } from "react";
 import { useFormStatus } from "react-dom";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   addIssue,
+  addPhoto,
   deleteIssue,
   saveConditions,
   type ActionState,
 } from "@/app/painel/anuncios/actions";
+import { createClient } from "@/lib/supabase/client";
+import { compressImage, validateImage } from "@/lib/image";
 import {
   AREA_LABELS,
   CONDITION_AREAS,
@@ -17,35 +21,131 @@ import {
   SEVERITY_META,
 } from "@/lib/constants";
 import { formatPrice } from "@/lib/utils";
-import type { ConditionStatus, ListingCondition, ListingIssue, ListingPhoto } from "@/lib/types";
+import type { ConditionStatus, ListingCondition, ListingIssue } from "@/lib/types";
 
-function SubmitButton({ label, busy }: { label: string; busy: string }) {
+function ConditionsSubmit() {
   const { pending } = useFormStatus();
   return (
     <button type="submit" className="btn-primary" disabled={pending}>
-      {pending ? busy : label}
+      {pending ? "A guardar…" : "Guardar estado"}
     </button>
   );
 }
 
 export function Step3Conditions({
   listingId,
+  userId,
   conditions,
   issues,
-  defectPhotos,
 }: {
   listingId: string;
+  userId: string;
   conditions: ListingCondition[];
   issues: ListingIssue[];
-  defectPhotos: ListingPhoto[];
 }) {
+  const router = useRouter();
   const [condState, condAction] = useActionState<ActionState, FormData>(saveConditions, {
     ok: false,
   });
-  const [issueState, issueAction] = useActionState<ActionState, FormData>(addIssue, { ok: false });
+
   const [showIssueForm, setShowIssueForm] = useState(issues.length === 0);
+  const [issueErrors, setIssueErrors] = useState<Record<string, string>>({});
+  const [issueMessage, setIssueMessage] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [preview, setPreview] = useState<string | null>(null);
+  const [, startTransition] = useTransition();
+
+  const formRef = useRef<HTMLFormElement>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
   const byArea = new Map(conditions.map((c) => [c.area, c.status]));
-  const ie = issueState.errors ?? {};
+
+  function pickFile(file: File | undefined) {
+    setIssueMessage(null);
+    if (!file) {
+      setPreview(null);
+      return;
+    }
+    const problem = validateImage(file);
+    if (problem) {
+      setIssueMessage(problem);
+      if (fileRef.current) fileRef.current.value = "";
+      setPreview(null);
+      return;
+    }
+    setPreview(URL.createObjectURL(file));
+  }
+
+  /**
+   * Carrega a fotografia (se houver) e cria o problema numa só operação,
+   * para o stand não ter de sair deste passo.
+   */
+  async function submitIssue(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const data = new FormData(form);
+
+    setBusy(true);
+    setIssueErrors({});
+    setIssueMessage(null);
+
+    try {
+      const file = fileRef.current?.files?.[0];
+
+      if (file) {
+        const problem = validateImage(file);
+        if (problem) {
+          setIssueMessage(problem);
+          return;
+        }
+
+        const supabase = createClient();
+        const blob = await compressImage(file);
+        // A política de storage exige que a primeira pasta seja o id do utilizador.
+        const path = `${userId}/${listingId}/${crypto.randomUUID()}.jpg`;
+
+        const { error: uploadError } = await supabase.storage
+          .from("listings")
+          .upload(path, blob, { contentType: "image/jpeg", upsert: false });
+
+        if (uploadError) {
+          setIssueMessage(`Não foi possível carregar a fotografia: ${uploadError.message}`);
+          return;
+        }
+
+        const {
+          data: { publicUrl },
+        } = supabase.storage.from("listings").getPublicUrl(path);
+
+        // Entra também na galeria do anúncio, marcada como defeito.
+        const photoData = new FormData();
+        photoData.set("listing_id", listingId);
+        photoData.set("url", publicUrl);
+        photoData.set("category", "defeito");
+        const photoResult = await addPhoto(photoData);
+        if (!photoResult.ok && photoResult.message) {
+          setIssueMessage(photoResult.message);
+          return;
+        }
+
+        data.set("photo_url", publicUrl);
+      }
+
+      const result = await addIssue({ ok: false }, data);
+      if (!result.ok) {
+        if (result.errors) setIssueErrors(result.errors);
+        if (result.message) setIssueMessage(result.message);
+        return;
+      }
+
+      form.reset();
+      setPreview(null);
+      if (fileRef.current) fileRef.current.value = "";
+      setShowIssueForm(false);
+      startTransition(() => router.refresh());
+    } finally {
+      setBusy(false);
+    }
+  }
 
   return (
     <div className="space-y-8">
@@ -93,7 +193,7 @@ export function Step3Conditions({
             ))}
           </div>
 
-          <SubmitButton label="Guardar estado" busy="A guardar…" />
+          <ConditionsSubmit />
         </form>
       </section>
 
@@ -103,8 +203,8 @@ export function Step3Conditions({
           <div>
             <h3 className="font-heading text-lg font-bold">Problemas declarados</h3>
             <p className="mt-1 text-sm text-brand-600">
-              Descreva cada problema conhecido. Declarar problemas é o que distingue a
-              AutoRetoma — não os omita.
+              Descreva cada problema conhecido e junte-lhe uma fotografia. Declarar
+              problemas é o que distingue a AutoRetoma — não os omita.
             </p>
           </div>
           {!showIssueForm && (
@@ -143,6 +243,9 @@ export function Step3Conditions({
                       >
                         {issue.prevents_driving ? "Impede a circulação" : "O carro circula"}
                       </span>
+                      {!issue.photo_url && (
+                        <span className="badge bg-amber-100 text-amber-800">Sem fotografia</span>
+                      )}
                     </div>
                   </div>
 
@@ -166,17 +269,12 @@ export function Step3Conditions({
         )}
 
         {showIssueForm && (
-          <form action={issueAction} className="card mt-5 space-y-4 p-5">
+          <form ref={formRef} onSubmit={submitIssue} className="card mt-5 space-y-4 p-5">
             <input type="hidden" name="listing_id" value={listingId} />
 
-            {issueState.message && (
-              <p
-                role="status"
-                className={`rounded-lg p-3 text-sm ${
-                  issueState.ok ? "bg-green-50 text-green-800" : "bg-red-50 text-red-800"
-                }`}
-              >
-                {issueState.message}
+            {issueMessage && (
+              <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-800">
+                {issueMessage}
               </p>
             )}
 
@@ -189,7 +287,7 @@ export function Step3Conditions({
                     <option key={a.value} value={a.value}>{a.label}</option>
                   ))}
                 </select>
-                {ie.area && <p className="mt-1 text-xs text-red-700">{ie.area}</p>}
+                {issueErrors.area && <p className="mt-1 text-xs text-red-700">{issueErrors.area}</p>}
               </div>
 
               <div>
@@ -199,7 +297,6 @@ export function Step3Conditions({
                   <option value="media">Média</option>
                   <option value="alta">Alta</option>
                 </select>
-                {ie.severity && <p className="mt-1 text-xs text-red-700">{ie.severity}</p>}
               </div>
             </div>
 
@@ -209,7 +306,7 @@ export function Step3Conditions({
                 id="title" name="title" type="text" required maxLength={120} className="input"
                 placeholder="Ex.: Embraiagem com desgaste avançado"
               />
-              {ie.title && <p className="mt-1 text-xs text-red-700">{ie.title}</p>}
+              {issueErrors.title && <p className="mt-1 text-xs text-red-700">{issueErrors.title}</p>}
             </div>
 
             <div>
@@ -218,35 +315,46 @@ export function Step3Conditions({
                 id="description" name="description" rows={3} required maxLength={2000} className="input"
                 placeholder="Explique o que se passa, em que condições se nota e o que o comprador deve esperar."
               />
-              {ie.description && <p className="mt-1 text-xs text-red-700">{ie.description}</p>}
+              {issueErrors.description && (
+                <p className="mt-1 text-xs text-red-700">{issueErrors.description}</p>
+              )}
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <label htmlFor="repair_estimate_eur" className="label">
-                  Estimativa de reparação (€)
-                </label>
-                <input
-                  id="repair_estimate_eur" name="repair_estimate_eur" type="number" min={0}
-                  className="input" placeholder="Opcional"
-                />
-                {ie.repair_estimate_eur && (
-                  <p className="mt-1 text-xs text-red-700">{ie.repair_estimate_eur}</p>
-                )}
-              </div>
+            {/* Fotografia carregada aqui mesmo, sem sair do passo */}
+            <div className="rounded-lg border border-dashed border-brand-300 bg-brand-50 p-4">
+              <label htmlFor="issue-photo" className="label">
+                Fotografia deste problema
+              </label>
+              <input
+                ref={fileRef}
+                id="issue-photo"
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                disabled={busy}
+                onChange={(e) => pickFile(e.target.files?.[0])}
+                className="block w-full text-sm text-brand-700 file:mr-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-accent-500 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-accent-600 disabled:opacity-60"
+              />
+              <p className="mt-1.5 text-xs text-brand-600">
+                Uma fotografia clara do defeito evita deslocações inúteis e perguntas
+                repetidas. Fica também na galeria do anúncio, assinalada como defeito.
+              </p>
 
-              <div>
-                <label htmlFor="photo_url" className="label">Fotografia do defeito</label>
-                <select id="photo_url" name="photo_url" className="input" defaultValue="">
-                  <option value="">Sem fotografia associada</option>
-                  {defectPhotos.map((p, i) => (
-                    <option key={p.id} value={p.url}>Fotografia de defeito {i + 1}</option>
-                  ))}
-                </select>
-                <p className="mt-1 text-xs text-brand-500">
-                  Carregue fotografias de defeito no passo 4 para as poder associar aqui.
-                </p>
-              </div>
+              {preview && (
+                <div className="relative mt-3 aspect-[16/10] w-44 overflow-hidden rounded-lg border-2 border-accent-300">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={preview} alt="Pré-visualização do defeito" className="h-full w-full object-cover" />
+                </div>
+              )}
+            </div>
+
+            <div>
+              <label htmlFor="repair_estimate_eur" className="label">
+                Estimativa de reparação (€)
+              </label>
+              <input
+                id="repair_estimate_eur" name="repair_estimate_eur" type="number" min={0}
+                className="input sm:max-w-xs" placeholder="Opcional"
+              />
             </div>
 
             <label className="flex items-start gap-2.5 text-sm text-brand-700">
@@ -257,13 +365,20 @@ export function Step3Conditions({
               <span>Este problema impede a circulação da viatura</span>
             </label>
 
-            <div className="flex items-center gap-3">
-              <SubmitButton label="Adicionar problema" busy="A adicionar…" />
+            <div className="flex items-center gap-3 border-t border-brand-100 pt-4">
+              <button type="submit" className="btn-primary" disabled={busy}>
+                {busy ? "A guardar…" : "Adicionar problema"}
+              </button>
               {issues.length > 0 && (
                 <button
                   type="button"
-                  onClick={() => setShowIssueForm(false)}
+                  onClick={() => {
+                    setShowIssueForm(false);
+                    setPreview(null);
+                    setIssueMessage(null);
+                  }}
                   className="btn-outline"
+                  disabled={busy}
                 >
                   Cancelar
                 </button>

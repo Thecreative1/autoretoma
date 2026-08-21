@@ -37,6 +37,7 @@ export function Step4Photos({
     setUploading(true);
 
     const supabase = createClient();
+    const uploaded: PhotoCategory[] = [];
 
     try {
       for (const file of Array.from(files)) {
@@ -69,7 +70,15 @@ export function Step4Photos({
         fd.set("category", category);
         const result = await addPhoto(fd);
         if (!result.ok && result.message) setError(result.message);
+        else uploaded.push(category);
       }
+
+      // Avança automaticamente para a próxima categoria obrigatória em falta,
+      // para o stand não ter de mexer no seletor a cada fotografia.
+      const done = new Set([...present, ...uploaded]);
+      const next = PHOTO_CATEGORIES.find((c) => c.required && !done.has(c.value));
+      if (next) setCategory(next.value);
+
       startTransition(() => router.refresh());
     } finally {
       setUploading(false);

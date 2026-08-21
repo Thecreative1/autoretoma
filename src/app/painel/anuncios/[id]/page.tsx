@@ -215,9 +215,9 @@ export default async function EditListingPage({
               <div className="mt-5">
                 <Step3Conditions
                   listingId={listing.id}
+                  userId={user.id}
                   conditions={listing.conditions}
                   issues={issues}
-                  defectPhotos={photos.filter((p) => p.is_defect)}
                 />
               </div>
             )}
