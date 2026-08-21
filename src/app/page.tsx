@@ -204,7 +204,7 @@ export default async function HomePage() {
             legal, podendo o prazo de três anos ser reduzido para 18 meses mediante acordo
             entre as partes.{" "}
             <Link href="/vendedores-profissionais" className="font-semibold underline">
-              Saiba mais sobre vendedores profissionais
+              Mais sobre vendedores profissionais
             </Link>
             .
           </p>

@@ -31,7 +31,7 @@ export function ConditionReport({
 
       <p className="mt-3 rounded-lg border-l-4 border-accent-500 bg-accent-50 p-4 text-sm font-semibold leading-relaxed text-brand-900">
         {issueCount === 0
-          ? "Este anúncio não declara problemas conhecidos. Confirme sempre o estado presencialmente antes de fechar negócio."
+          ? "Este anúncio não declara problemas conhecidos. Confirma sempre o estado presencialmente antes de fechares negócio."
           : `Este anúncio declara ${issueCount} ${
               issueCount === 1 ? "ponto que deves conhecer" : "pontos que deves conhecer"
             } antes de contactar o stand.`}

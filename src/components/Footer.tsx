@@ -61,8 +61,8 @@ export function Footer() {
           <ul className="mt-3 space-y-2 text-sm">
             <li><Link href="/contactos" className="hover:text-accent-400">Página de contactos</Link></li>
             <li>
-              <a href="mailto:geral@autoretoma.pt" className="hover:text-accent-400">
-                geral@autoretoma.pt
+              <a href="mailto:contacto@autoretoma.pt" className="hover:text-accent-400">
+                contacto@autoretoma.pt
               </a>
             </li>
           </ul>

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { ContactForm } from "./ContactForm";
 import { SITE_URL } from "@/lib/constants";
 
 export const metadata: Metadata = {
@@ -9,6 +10,8 @@ export const metadata: Metadata = {
 };
 
 export default function ContactsPage() {
+  const formspreeId = process.env.NEXT_PUBLIC_FORMSPREE_ID ?? null;
+
   return (
     <div className="container-site max-w-3xl py-10 lg:py-16">
       <nav aria-label="Caminho" className="mb-5 text-sm text-brand-500">
@@ -25,39 +28,33 @@ export default function ContactsPage() {
         proteção de dados.
       </p>
 
+      <div className="mt-8 rounded-card border border-brand-200 bg-brand-50 p-5 text-sm leading-relaxed text-brand-700">
+        <p>
+          <strong className="text-brand-900">Quer falar sobre um carro específico?</strong>{" "}
+          Os pedidos sobre viaturas devem ser feitos diretamente ao stand vendedor, através
+          do botão de contacto na página do anúncio. A AutoRetoma não intervém na
+          negociação nem na venda.
+        </p>
+      </div>
+
+      <div className="card mt-8 p-6">
+        <h2 className="mb-5 font-heading text-lg font-bold">Enviar mensagem</h2>
+        <ContactForm formspreeId={formspreeId} />
+      </div>
+
       <div className="mt-8 grid gap-5 sm:grid-cols-2">
         <div className="card p-6">
-          <h2 className="font-heading text-lg font-bold">Email geral</h2>
+          <h2 className="font-heading text-base font-bold">Email</h2>
           <p className="mt-2 text-sm text-brand-600">
-            Dúvidas sobre a plataforma e sobre anúncios.
+            Se preferir escrever diretamente.
           </p>
-          <a href="mailto:geral@autoretoma.pt" className="btn-outline mt-4">
-            geral@autoretoma.pt
+          <a href="mailto:contacto@autoretoma.pt" className="btn-outline mt-4">
+            contacto@autoretoma.pt
           </a>
         </div>
 
         <div className="card p-6">
-          <h2 className="font-heading text-lg font-bold">Stands</h2>
-          <p className="mt-2 text-sm text-brand-600">
-            Registo, verificação de conta e publicação de anúncios.
-          </p>
-          <a href="mailto:stands@autoretoma.pt" className="btn-outline mt-4">
-            stands@autoretoma.pt
-          </a>
-        </div>
-
-        <div className="card p-6">
-          <h2 className="font-heading text-lg font-bold">Proteção de dados</h2>
-          <p className="mt-2 text-sm text-brand-600">
-            Exercício dos direitos previstos no RGPD.
-          </p>
-          <a href="mailto:privacidade@autoretoma.pt" className="btn-outline mt-4">
-            privacidade@autoretoma.pt
-          </a>
-        </div>
-
-        <div className="card p-6">
-          <h2 className="font-heading text-lg font-bold">Reclamações</h2>
+          <h2 className="font-heading text-base font-bold">Reclamações</h2>
           <p className="mt-2 text-sm text-brand-600">
             Livro de Reclamações eletrónico e resolução de litígios.
           </p>
@@ -65,17 +62,6 @@ export default function ContactsPage() {
             Ver informação
           </Link>
         </div>
-      </div>
-
-      <div className="mt-10 rounded-card border border-brand-200 bg-brand-50 p-5 text-sm leading-relaxed text-brand-700">
-        <p>
-          <strong className="text-brand-900">
-            Quer falar sobre um carro específico?
-          </strong>{" "}
-          Os pedidos sobre viaturas devem ser feitos diretamente ao stand vendedor, através
-          do botão de contacto na página do anúncio. A AutoRetoma não intervém na
-          negociação nem na venda.
-        </p>
       </div>
 
       <div className="mt-8 rounded-card border border-brand-200 p-5 text-sm text-brand-600">

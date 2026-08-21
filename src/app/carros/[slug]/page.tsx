@@ -267,7 +267,7 @@ export default async function ListingPage({ params }: { params: Params }) {
             <ul className="mt-3 space-y-2">
               <li>A viatura é vendida pelo stand identificado, não pela AutoRetoma.</li>
               <li>Os bens usados vendidos por profissionais a consumidores têm garantia legal.</li>
-              <li>Confirme sempre o estado da viatura presencialmente antes de fechar negócio.</li>
+              <li>Confirma sempre o estado da viatura presencialmente antes de fechares negócio.</li>
             </ul>
             <Link href="/vendedores-profissionais" className="mt-3 inline-block font-semibold underline">
               Informação sobre vendedores profissionais
