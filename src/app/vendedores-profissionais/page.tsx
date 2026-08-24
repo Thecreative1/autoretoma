@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { LegalPage, Section } from "@/components/LegalPage";
+import { LegalPage, Lei, Section } from "@/components/LegalPage";
 import { SITE_URL } from "@/lib/constants";
 
 export const metadata: Metadata = {
@@ -44,9 +44,18 @@ export default function ProfessionalSellersPage() {
 
       <Section title="4. Garantia legal na venda de bens usados">
         <p>
-          Os bens móveis usados vendidos por um profissional a um consumidor beneficiam de
-          garantia legal de conformidade. O prazo de três anos pode ser reduzido para 18
-          meses mediante acordo entre as partes, nos termos legalmente admitidos.
+          Nos termos do{" "}
+          <Lei href="https://diariodarepublica.pt/dr/detalhe/decreto-lei/84-2021-172938301">Decreto-Lei n.º 84/2021, de 18 de outubro</Lei>, os
+          bens móveis usados vendidos por um profissional a um consumidor beneficiam de
+          garantia legal de conformidade pelo prazo de <strong>três anos</strong> a contar
+          da entrega.
+        </p>
+        <p>
+          Esse prazo pode ser reduzido para um mínimo de <strong>18 meses</strong>, mas só
+          por acordo expresso entre comprador e vendedor. Quando há essa redução, encurta-se
+          igualmente para um ano o período durante o qual se presume que o defeito já
+          existia no momento da entrega — o que significa que, passado esse ano, cabe ao
+          consumidor demonstrar que a falta de conformidade é anterior à compra.
         </p>
         <p>
           A declaração de defeitos num anúncio serve para informar o comprador antes da
@@ -54,9 +63,9 @@ export default function ProfessionalSellersPage() {
           nem uma exclusão da responsabilidade do vendedor.
         </p>
         <p className="rounded-lg bg-brand-50 p-4">
-          Este enquadramento é apresentado a título informativo e provisório. O texto final
-          será revisto por advogado português antes do lançamento e deve ser confirmado
-          junto do vendedor e, se necessário, de aconselhamento jurídico próprio.
+          Este resumo tem finalidade informativa. As condições concretas da garantia — em
+          especial se foi acordada a redução para 18 meses — devem ser confirmadas por
+          escrito junto do stand vendedor, no momento da compra.
         </p>
       </Section>
 

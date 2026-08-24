@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import { LegalPage, Section } from "@/components/LegalPage";
+import { LegalPage, Lei, Section } from "@/components/LegalPage";
 import { SITE_URL } from "@/lib/constants";
 
 export const metadata: Metadata = {
   title: "Política de cookies",
   description:
-    "Que cookies a AutoRetoma utiliza e para que servem (versão provisória do MVP).",
+    "Que cookies a AutoRetoma utiliza, para que servem e o que diz a lei portuguesa sobre o consentimento.",
   alternates: { canonical: `${SITE_URL}/politica-de-cookies` },
 };
 
@@ -20,6 +20,13 @@ export default function CookiesPage() {
           Cookies são pequenos ficheiros guardados no seu dispositivo quando visita um
           site. Permitem, entre outras funções, manter a sessão iniciada e garantir a
           segurança das áreas privadas.
+        </p>
+        <p>
+          A utilização de cookies está regulada pelo artigo 5.º da{" "}
+          <Lei href="https://diariodarepublica.pt/dr/detalhe/lei/41-2004-495094">Lei n.º 41/2004, de 18 de agosto</Lei>. Segundo essa
+          norma, os cookies estritamente necessários para prestar um serviço expressamente
+          solicitado pelo utilizador estão dispensados de consentimento prévio; todos os
+          outros exigem-no.
         </p>
       </Section>
 

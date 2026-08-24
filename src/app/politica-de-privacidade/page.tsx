@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { LegalPage, Section } from "@/components/LegalPage";
-import { SITE_URL } from "@/lib/constants";
+import { LegalPage, Lei, Section } from "@/components/LegalPage";
+import { OPERATOR, OPERATOR_IDENTIFIED, SITE_EMAIL, SITE_URL } from "@/lib/constants";
 
 export const metadata: Metadata = {
   title: "Política de privacidade",
   description:
-    "Como a AutoRetoma trata os dados pessoais de compradores e vendedores profissionais (versão provisória do MVP).",
+    "Como a AutoRetoma trata os dados pessoais de compradores e vendedores profissionais, ao abrigo do RGPD.",
   alternates: { canonical: `${SITE_URL}/politica-de-privacidade` },
 };
 
@@ -17,12 +17,35 @@ export default function PrivacyPage() {
       intro="Informação sobre o tratamento de dados pessoais na plataforma AutoRetoma, nos termos do Regulamento Geral sobre a Proteção de Dados."
     >
       <Section title="1. Responsável pelo tratamento">
+        {OPERATOR_IDENTIFIED ? (
+          <p>
+            O responsável pelo tratamento é <strong>{OPERATOR.legalName}</strong>, NIF{" "}
+            {OPERATOR.taxId}, com sede em {OPERATOR.address}, contactável através de{" "}
+            <a href={`mailto:${SITE_EMAIL}`} className="underline">
+              {SITE_EMAIL}
+            </a>
+            .
+          </p>
+        ) : (
+          <p>
+            O responsável pelo tratamento dos dados recolhidos através desta plataforma é a
+            entidade que explora a AutoRetoma, contactável através de{" "}
+            <a href={`mailto:${SITE_EMAIL}`} className="underline">
+              {SITE_EMAIL}
+            </a>{" "}
+            ou da{" "}
+            <Link href="/contactos" className="underline">
+              página de contactos
+            </Link>
+            .
+          </p>
+        )}
         <p>
-          O responsável pelo tratamento dos dados recolhidos através desta plataforma é a
-          entidade que explora a AutoRetoma, contactável através da{" "}
-          <Link href="/contactos" className="underline">página de contactos</Link>. Os
-          dados de identificação completos da entidade responsável serão publicados nesta
-          página antes do lançamento.
+          O tratamento rege-se pelo{" "}
+          <Lei href="https://eur-lex.europa.eu/legal-content/PT/TXT/?uri=CELEX:32016R0679">Regulamento (UE) 2016/679</Lei> (Regulamento Geral
+          sobre a Proteção de Dados) e pela{" "}
+          <Lei href="https://diariodarepublica.pt/dr/detalhe/lei/58-2019-123815982">Lei n.º 58/2019, de 8 de agosto</Lei>, que
+          assegura a sua execução na ordem jurídica portuguesa.
         </p>
       </Section>
 
@@ -52,18 +75,18 @@ export default function PrivacyPage() {
       <Section title="3. Finalidades e fundamentos de licitude">
         <ul className="list-disc space-y-1.5 pl-5">
           <li>
-            Transmitir ao stand vendedor o pedido de contacto do comprador — com base no
-            consentimento expresso recolhido no formulário.
+            Transmitir ao stand vendedor o pedido de contacto do comprador — consentimento
+            expresso recolhido no formulário (artigo 6.º, n.º 1, alínea a, do RGPD).
           </li>
           <li>
-            Gerir o registo, a verificação e a conta dos vendedores profissionais — com
-            base na execução do contrato de utilização da plataforma.
+            Gerir o registo, a verificação e a conta dos vendedores profissionais —
+            execução do contrato de utilização da plataforma (artigo 6.º, n.º 1, alínea b).
           </li>
           <li>
-            Moderar anúncios, prevenir fraude e abuso — com base no interesse legítimo em
-            garantir a fiabilidade da plataforma.
+            Moderar anúncios, prevenir fraude e abuso — interesse legítimo em garantir a
+            fiabilidade da plataforma (artigo 6.º, n.º 1, alínea f).
           </li>
-          <li>Cumprir obrigações legais aplicáveis.</li>
+          <li>Cumprir obrigações legais aplicáveis (artigo 6.º, n.º 1, alínea c).</li>
         </ul>
       </Section>
 
@@ -77,12 +100,20 @@ export default function PrivacyPage() {
       </Section>
 
       <Section title="5. Prazos de conservação">
-        <p>
-          Os pedidos de contacto são conservados enquanto forem necessários à gestão do
-          contacto comercial e, no máximo, durante o período que vier a ser fixado na
-          versão final desta política. Os dados de registo dos stands são conservados
-          enquanto a conta se mantiver ativa.
-        </p>
+        <ul className="list-disc space-y-1.5 pl-5">
+          <li>
+            <strong>Pedidos de contacto:</strong> dois anos a contar do último contacto,
+            findos os quais são eliminados.
+          </li>
+          <li>
+            <strong>Registo e dados dos stands:</strong> enquanto a conta se mantiver ativa
+            e, após o encerramento, durante os prazos legais de conservação aplicáveis.
+          </li>
+          <li>
+            <strong>Anúncios:</strong> enquanto publicados e, depois de arquivados, enquanto
+            forem necessários para prova do cumprimento das regras da plataforma.
+          </li>
+        </ul>
       </Section>
 
       <Section title="6. Direitos dos titulares">
@@ -94,8 +125,18 @@ export default function PrivacyPage() {
           <Link href="/contactos" className="underline">página de contactos</Link>.
         </p>
         <p>
-          Tem ainda o direito de apresentar reclamação junto da Comissão Nacional de
-          Proteção de Dados (CNPD).
+          Estes direitos estão previstos nos artigos 15.º a 22.º do RGPD. Tem ainda o
+          direito de apresentar reclamação junto da autoridade de controlo, que em Portugal
+          é a{" "}
+          <a
+            href="https://www.cnpd.pt"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline"
+          >
+            Comissão Nacional de Proteção de Dados
+          </a>
+          .
         </p>
       </Section>
 

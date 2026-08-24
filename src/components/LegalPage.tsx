@@ -1,19 +1,22 @@
 import Link from "next/link";
+import { LEGAL_UPDATED, OPERATOR, OPERATOR_IDENTIFIED, SITE_EMAIL } from "@/lib/constants";
 
 /**
  * Moldura comum às páginas informativas e legais.
- * Todo o conteúdo jurídico é provisório e deve ser revisto por
- * advogado português antes do lançamento.
+ *
+ * O texto resume o regime legal português e europeu aplicável e cita a
+ * legislação em que se baseia. Não substitui aconselhamento jurídico sobre
+ * um caso concreto — é isso que o aviso no topo diz ao leitor.
  */
 export function LegalPage({
   title,
   intro,
-  provisional = true,
+  notice = true,
   children,
 }: {
   title: string;
   intro?: string;
-  provisional?: boolean;
+  notice?: boolean;
   children: React.ReactNode;
 }) {
   return (
@@ -27,24 +30,37 @@ export function LegalPage({
       <h1 className="font-heading text-3xl font-extrabold tracking-tight sm:text-4xl">{title}</h1>
       {intro && <p className="mt-4 text-lg leading-relaxed text-brand-600">{intro}</p>}
 
-      {provisional && (
+      {notice && (
         <p className="mt-6 rounded-card border-l-4 border-accent-500 bg-accent-50 p-4 text-sm leading-relaxed text-brand-800">
-          <strong>Documento provisório.</strong> Este texto foi preparado para a fase de
-          MVP e destina-se a ser revisto e validado por advogado inscrito na Ordem dos
-          Advogados portuguesa antes do lançamento público da plataforma.
+          <strong>Informação geral.</strong> Este documento explica as regras de utilização
+          da AutoRetoma e resume direitos e deveres previstos na lei portuguesa e europeia,
+          identificando a legislação aplicável. Não substitui aconselhamento jurídico sobre
+          um caso concreto.
         </p>
       )}
 
       <div className="prose-autoretoma mt-8 space-y-6 text-brand-700">{children}</div>
 
-      <p className="mt-10 border-t border-brand-100 pt-6 text-sm text-brand-500">
-        Última atualização: versão inicial do MVP. Para questões sobre este documento,
-        utilize a{" "}
-        <Link href="/contactos" className="underline">
-          página de contactos
-        </Link>
-        .
-      </p>
+      <div className="mt-10 space-y-2 border-t border-brand-100 pt-6 text-sm text-brand-500">
+        {OPERATOR_IDENTIFIED && (
+          <p>
+            <span className="font-semibold text-brand-700">{OPERATOR.legalName}</span> · NIF{" "}
+            {OPERATOR.taxId} · {OPERATOR.address}
+          </p>
+        )}
+        <p>
+          Última atualização: {LEGAL_UPDATED}. Para questões sobre este documento, escreva
+          para{" "}
+          <a href={`mailto:${SITE_EMAIL}`} className="underline">
+            {SITE_EMAIL}
+          </a>{" "}
+          ou utilize a{" "}
+          <Link href="/contactos" className="underline">
+            página de contactos
+          </Link>
+          .
+        </p>
+      </div>
     </div>
   );
 }
@@ -55,5 +71,19 @@ export function Section({ title, children }: { title: string; children: React.Re
       <h2 className="font-heading text-xl font-bold text-brand-900">{title}</h2>
       <div className="mt-3 space-y-3 text-sm leading-relaxed">{children}</div>
     </section>
+  );
+}
+
+/** Referência a legislação, com ligação ao Diário da República ou ao EUR-Lex. */
+export function Lei({ href, children }: { href: string; children: React.ReactNode }) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="underline decoration-brand-300 underline-offset-2 hover:text-accent-600"
+    >
+      {children}
+    </a>
   );
 }

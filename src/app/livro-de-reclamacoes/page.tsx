@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { LegalPage, Section } from "@/components/LegalPage";
+import { LegalPage, Lei, Section } from "@/components/LegalPage";
 import { SITE_URL } from "@/lib/constants";
 
 export const metadata: Metadata = {
@@ -33,7 +33,9 @@ export default function ComplaintsPage() {
         </p>
         <p className="mt-3 text-xs text-brand-500">
           Ligação para o sítio oficial livroreclamacoes.pt, gerido pela Administração
-          Pública.
+          Pública. O livro de reclamações é obrigatório nos termos do{" "}
+          <Lei href="https://diariodarepublica.pt/dr/detalhe/decreto-lei/156-2005-143320">Decreto-Lei n.º 156/2005, de 15 de setembro</Lei>,
+          na redação em vigor, que estendeu a obrigação ao formato eletrónico.
         </p>
       </Section>
 

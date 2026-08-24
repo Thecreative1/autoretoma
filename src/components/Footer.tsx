@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { OPERATOR, OPERATOR_IDENTIFIED } from "@/lib/constants";
 import { Logo } from "./Logo";
 
 const LEGAL = [
@@ -79,8 +80,19 @@ export function Footer() {
 
       <div className="border-t border-brand-900">
         <div className="container-site flex flex-col gap-2 py-5 text-xs text-brand-300 sm:flex-row sm:items-center sm:justify-between">
-          <p>© {new Date().getFullYear()} AutoRetoma. Todos os direitos reservados.</p>
-          <p>Conteúdo jurídico provisório, sujeito a revisão por advogado antes do lançamento.</p>
+          <p>
+            © {new Date().getFullYear()} AutoRetoma. Todos os direitos reservados.
+            {OPERATOR_IDENTIFIED && (
+              <>
+                {" "}
+                {OPERATOR.legalName} · NIF {OPERATOR.taxId}
+              </>
+            )}
+          </p>
+          <p>
+            A AutoRetoma divulga anúncios de vendedores profissionais e não é parte no
+            contrato de compra e venda.
+          </p>
         </div>
       </div>
     </footer>

@@ -13,6 +13,36 @@ import type {
 export const SITE_NAME = "AutoRetoma";
 export const SITE_TAGLINE = "Carros baratos. Estado transparente. Diretos do stand.";
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+export const SITE_EMAIL = "contacto@autoretoma.pt";
+
+/**
+ * Identificação do prestador do serviço.
+ *
+ * BLOQUEANTE: o artigo 10.º do Decreto-Lei n.º 7/2004 (comércio eletrónico) obriga
+ * quem presta um serviço da sociedade da informação a disponibilizar, de forma
+ * permanente e de acesso fácil, o nome ou denominação social, o número de
+ * identificação fiscal e o endereço da sede.
+ *
+ * Enquanto estes campos estiverem a null, as páginas legais omitem o bloco de
+ * identificação em vez de mostrarem texto por preencher. Preencher antes de
+ * aprovar o primeiro stand.
+ */
+export const OPERATOR: {
+  legalName: string | null;
+  taxId: string | null;
+  address: string | null;
+} = {
+  legalName: null, // ex.: "AutoRetoma, Unipessoal Lda."
+  taxId: null, // ex.: "PT512345678"
+  address: null, // ex.: "Rua Exemplo, 00, 4760-000 Vila Nova de Famalicão"
+};
+
+/** Verdadeiro quando a identificação legal já está completa. */
+export const OPERATOR_IDENTIFIED =
+  OPERATOR.legalName !== null && OPERATOR.taxId !== null && OPERATOR.address !== null;
+
+/** Data da última revisão dos documentos legais. Atualizar sempre que o texto mudar. */
+export const LEGAL_UPDATED = "24 de agosto de 2026";
 
 export const DISTRICTS = [
   "Aveiro",

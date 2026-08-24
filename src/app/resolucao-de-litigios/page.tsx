@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { LegalPage, Section } from "@/components/LegalPage";
+import { LegalPage, Lei, Section } from "@/components/LegalPage";
 import { SITE_URL } from "@/lib/constants";
 
 export const metadata: Metadata = {
@@ -23,9 +23,11 @@ export default function DisputeResolutionPage() {
           garantia devem ser dirigidos, em primeiro lugar, ao stand identificado no anúncio.
         </p>
         <p>
-          Os vendedores profissionais estão obrigados a informar o consumidor sobre a
-          entidade de resolução alternativa de litígios de consumo competente e a
-          disponibilizar essa informação nos seus estabelecimentos e sítios na Internet.
+          Nos termos da{" "}
+          <Lei href="https://diariodarepublica.pt/dr/detalhe/lei/144-2015-70789875">Lei n.º 144/2015, de 8 de setembro</Lei>, que
+          estabelece o regime da resolução alternativa de litígios de consumo, os vendedores
+          profissionais estão obrigados a informar o consumidor sobre a entidade competente
+          e a disponibilizar essa informação nos seus estabelecimentos e sítios na Internet.
         </p>
       </Section>
 
@@ -47,8 +49,16 @@ export default function DisputeResolutionPage() {
         </p>
         <p className="rounded-lg bg-brand-50 p-4">
           A entidade concretamente competente depende do domicílio do consumidor e do local
-          do estabelecimento do vendedor. Esta página será completada com a identificação da
-          entidade aplicável à plataforma após revisão jurídica.
+          do estabelecimento do vendedor. Confirme junto do stand qual a entidade que este
+          indica, ou consulte a lista mantida pela Direção-Geral do Consumidor.
+        </p>
+        <p>
+          <strong>Nota sobre a plataforma europeia.</strong> A plataforma europeia de
+          resolução de litígios em linha deixou de estar operacional a 20 de julho de 2025,
+          por força do{" "}
+          <Lei href="https://eur-lex.europa.eu/legal-content/PT/TXT/?uri=OJ:L_202403228">Regulamento (UE) 2024/3228</Lei>. As ligações
+          para essa plataforma, que ainda constam de muitos sítios portugueses, já não
+          conduzem a lado nenhum.
         </p>
       </Section>
 
