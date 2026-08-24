@@ -117,18 +117,24 @@ Disponível em <http://localhost:3000>.
 
 ## Contas de demonstração
 
-Criadas por `supabase/seed.sql`. Palavra-passe comum: **`demo12345`**
+O ficheiro `supabase/seed.sql` cria contas de teste com uma palavra-passe fixa, além de
+três stands fictícios e dez viaturas inventadas. As credenciais estão nesse ficheiro.
 
-| Perfil | Email | Acesso |
-|---|---|---|
-| Administrador | `admin@autoretoma.demo` | `/admin` |
-| Stand (Braga) | `stand.norte@autoretoma.demo` | `/painel` |
-| Stand (Lisboa) | `stand.lisboa@autoretoma.demo` | `/painel` |
-| Stand (Faro) | `stand.algarve@autoretoma.demo` | `/painel` |
+> **Só para desenvolvimento local.** Não carregar o `seed.sql` — nem o
+> `supabase/_setup/instalacao-completa.sql`, que o inclui — numa base de dados de
+> produção. As contas que cria têm uma palavra-passe conhecida e dariam acesso ao painel
+> de administração, onde são visíveis os dados pessoais de compradores reais.
 
-Os três stands e as dez viaturas são fictícios e estão marcados como demonstração na
-interface. Não correspondem a stands reais nem a pessoas reais. As imagens são
-marcadores gráficos gerados (`public/demo/`), não fotografias.
+Em produção, cria o administrador manualmente em *Authentication → Users* no painel do
+Supabase, com uma palavra-passe própria, e promove-o depois:
+
+```sql
+update public.profiles set role = 'admin'
+where id = (select id from auth.users where email = 'o-teu-email');
+```
+
+Os stands e viaturas de demonstração são fictícios e estão marcados como tal na
+interface. As imagens são marcadores gráficos gerados (`public/demo/`), não fotografias.
 
 ---
 
@@ -291,7 +297,9 @@ npx supabase db push
 
 4. No Supabase, em Authentication → URL Configuration, definir o Site URL para
    `https://autoretoma.pt` e ativar a confirmação de email.
-5. Não carregar `seed.sql` em produção.
+5. **Não carregar `seed.sql` nem `_setup/instalacao-completa.sql` em produção** — o
+   segundo inclui o primeiro. Criar o administrador à mão, conforme descrito em
+   [Contas de demonstração](#contas-de-demonstração).
 
 ### Verificação
 
