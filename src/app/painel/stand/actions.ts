@@ -13,7 +13,7 @@ export interface StandState {
 
 export async function updateStand(_prev: StandState, formData: FormData): Promise<StandState> {
   const stand = await getOwnStand();
-  if (!stand) return { ok: false, message: "Sem stand associado." };
+  if (!stand) return { ok: false, message: "A sua conta ainda não está associada a nenhum stand. Escreva para contacto@autoretoma.pt para resolvermos a situação." };
 
   const parsed = standUpdateSchema.safeParse({
     commercial_name: String(formData.get("commercial_name") ?? ""),

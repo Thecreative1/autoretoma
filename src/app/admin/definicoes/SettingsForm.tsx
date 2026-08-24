@@ -38,7 +38,7 @@ export function SettingsForm({ settings }: { settings: PlatformSettings }) {
         />
         <p className="mt-1 text-xs text-brand-500">
           Limite aplicado na submissão de anúncios e apresentado nos filtros de pesquisa.
-          O valor inicial do MVP é 5.000 €.
+          O valor predefinido é 5.000 €.
         </p>
       </div>
 
@@ -63,8 +63,8 @@ export function SettingsForm({ settings }: { settings: PlatformSettings }) {
           className="input sm:max-w-xs" defaultValue={settings.facet_min_listings}
         />
         <p className="mt-1 text-xs text-brand-500">
-          As páginas indexáveis por faceta só são criadas quando existirem, pelo menos,
-          este número de anúncios.
+          As páginas por marca, distrito e combustível só são criadas — e mostradas ao
+          Google — quando existirem, pelo menos, este número de anúncios.
         </p>
       </div>
 

@@ -111,7 +111,10 @@ export function Step3Conditions({
           .upload(path, blob, { contentType: "image/jpeg", upsert: false });
 
         if (uploadError) {
-          setIssueMessage(`Não foi possível carregar a fotografia: ${uploadError.message}`);
+          console.error("upload de fotografia do problema:", uploadError.message);
+          setIssueMessage(
+            "Não foi possível carregar a fotografia. Verifique a ligação à Internet e tente novamente. Se o problema continuar, escreva para contacto@autoretoma.pt."
+          );
           return;
         }
 

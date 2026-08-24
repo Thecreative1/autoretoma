@@ -40,7 +40,7 @@ async function assertOwnership(listingId: string) {
 // ------------------------------------------------------------
 export async function saveStep1(_prev: ActionState, formData: FormData): Promise<ActionState> {
   const stand = await getOwnStand();
-  if (!stand) return { ok: false, message: "Sem stand associado." };
+  if (!stand) return { ok: false, message: "A sua conta ainda não está associada a nenhum stand. Escreva para contacto@autoretoma.pt para resolvermos a situação." };
 
   const listingId = String(formData.get("listing_id") ?? "");
   const parsed = listingStep1Schema.safeParse(Object.fromEntries(formData.entries()));
@@ -74,7 +74,11 @@ export async function saveStep1(_prev: ActionState, formData: FormData): Promise
     .single();
 
   if (error || !created) {
-    return { ok: false, message: error?.message ?? "Não foi possível criar o anúncio." };
+    console.error("criar anúncio:", error?.message);
+    return {
+      ok: false,
+      message: "Não foi possível criar o anúncio. Tente novamente dentro de momentos.",
+    };
   }
 
   // Estado inicial de cada área: não verificado
@@ -114,7 +118,10 @@ export async function saveStep2(_prev: ActionState, formData: FormData): Promise
     })
     .eq("id", listingId);
 
-  if (error) return { ok: false, message: error.message };
+  if (error) {
+    console.error("guardar fotografia:", error.message);
+    return { ok: false, message: "Não foi possível guardar a fotografia. Tente novamente." };
+  }
 
   revalidatePath(`/painel/anuncios/${listingId}`);
   redirect(`/painel/anuncios/${listingId}?passo=3`);
@@ -251,7 +258,9 @@ export async function addPhoto(formData: FormData): Promise<ActionState> {
   const listingId = String(formData.get("listing_id") ?? "");
   const url = String(formData.get("url") ?? "");
   const category = String(formData.get("category") ?? "outra");
-  if (!url) return { ok: false, message: "URL da fotografia em falta." };
+  if (!url) {
+    return { ok: false, message: "Não foi possível guardar a fotografia. Tente carregá-la outra vez." };
+  }
 
   const { supabase } = await assertOwnership(listingId);
   const { count } = await supabase

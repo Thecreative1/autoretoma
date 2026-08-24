@@ -161,7 +161,10 @@ export async function updateSettings(_prev: AdminState, formData: FormData): Pro
     return { ok: false, message: "O mínimo de fotografias deve estar entre 1 e 30." };
   }
   if (!Number.isFinite(facetMin) || facetMin < 1) {
-    return { ok: false, message: "Indique um mínimo válido para as páginas por faceta." };
+    return {
+      ok: false,
+      message: "Indique um mínimo válido para as páginas por marca, distrito e combustível.",
+    };
   }
 
   const supabase = await createClient();
@@ -176,7 +179,10 @@ export async function updateSettings(_prev: AdminState, formData: FormData): Pro
     })
     .eq("id", 1);
 
-  if (error) return { ok: false, message: error.message };
+  if (error) {
+    console.error("guardar definições:", error.message);
+    return { ok: false, message: "Não foi possível guardar as definições. Tente novamente." };
+  }
 
   await audit(user.id, "definicoes_atualizadas", "platform_settings", "1", {
     max_price_eur: maxPrice,
@@ -203,7 +209,10 @@ export async function createBrand(_prev: AdminState, formData: FormData): Promis
   if (error) {
     return {
       ok: false,
-      message: error.code === "23505" ? "Essa marca já existe." : error.message,
+      message:
+        error.code === "23505"
+          ? "Essa marca já existe."
+          : "Não foi possível guardar a marca. Tente novamente.",
     };
   }
 
@@ -227,7 +236,10 @@ export async function createModel(_prev: AdminState, formData: FormData): Promis
   if (error) {
     return {
       ok: false,
-      message: error.code === "23505" ? "Esse modelo já existe nesta marca." : error.message,
+      message:
+        error.code === "23505"
+          ? "Esse modelo já existe nesta marca."
+          : "Não foi possível guardar o modelo. Tente novamente.",
     };
   }
 

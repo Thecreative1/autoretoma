@@ -41,7 +41,10 @@ export function LogoUploader({
         .upload(path, blob, { contentType: "image/jpeg", upsert: true });
 
       if (uploadError) {
-        setError(`Não foi possível carregar o logótipo: ${uploadError.message}`);
+        console.error("upload do logótipo:", uploadError.message);
+        setError(
+          "Não foi possível carregar o logótipo. Verifique a ligação à Internet e tente novamente. Se o problema continuar, escreva para contacto@autoretoma.pt."
+        );
         return;
       }
 
