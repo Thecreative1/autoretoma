@@ -94,3 +94,17 @@ export function toInt(value: string | undefined): number | undefined {
   const n = Number.parseInt(value, 10);
   return Number.isFinite(n) ? n : undefined;
 }
+
+/**
+ * Número em formato internacional para o wa.me, a partir do que o stand escreveu.
+ * O formulário aceita "912345678", "+351 912 345 678" ou "00351912345678" — e o
+ * WhatsApp mostra sempre o número com indicativo, por isso é isso que o stand copia.
+ * Sem normalizar, prefixar 351 às cegas gerava "351351…" e um link morto.
+ */
+export function whatsappNumber(raw: string): string | null {
+  let digits = raw.replace(/\D/g, "");
+  if (digits.startsWith("00")) digits = digits.slice(2);
+  if (!digits.startsWith("351")) digits = `351${digits}`;
+  // 351 + nove dígitos nacionais
+  return digits.length === 12 ? digits : null;
+}

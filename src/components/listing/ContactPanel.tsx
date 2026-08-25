@@ -5,6 +5,7 @@ import { useFormStatus } from "react-dom";
 import Link from "next/link";
 import { submitLead, type LeadState } from "@/app/carros/[slug]/actions";
 import type { ListingWithRelations } from "@/lib/types";
+import { whatsappNumber } from "@/lib/utils";
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -26,8 +27,9 @@ export function ContactPanel({
   const [formOpen, setFormOpen] = useState(false);
   const stand = listing.stand;
 
-  const whatsappHref = stand.whatsapp
-    ? `https://wa.me/351${stand.whatsapp.replace(/\D/g, "")}?text=${encodeURIComponent(
+  const wa = stand.whatsapp ? whatsappNumber(stand.whatsapp) : null;
+  const whatsappHref = wa
+    ? `https://wa.me/${wa}?text=${encodeURIComponent(
         `Olá, vi o anúncio do ${title} na AutoRetoma e gostava de mais informações.`
       )}`
     : null;

@@ -111,7 +111,10 @@ export function RegisterForm() {
           </Field>
 
           <Field id="whatsapp" label="WhatsApp" error={e.whatsapp}>
-            <input id="whatsapp" name="whatsapp" type="tel" className="input" />
+            <input
+              id="whatsapp" name="whatsapp" type="tel" className="input"
+              placeholder="912 345 678"
+            />
           </Field>
         </div>
       </fieldset>

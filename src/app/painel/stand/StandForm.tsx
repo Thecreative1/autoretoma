@@ -75,6 +75,7 @@ export function StandForm({ stand }: { stand: Stand }) {
           <input
             id="whatsapp" name="whatsapp" type="tel" className="input"
             defaultValue={stand.whatsapp ?? ""}
+            placeholder="912 345 678"
           />
           {e.whatsapp && <p className="mt-1 text-xs text-red-700">{e.whatsapp}</p>}
         </div>
