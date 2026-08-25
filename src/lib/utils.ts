@@ -108,3 +108,17 @@ export function whatsappNumber(raw: string): string | null {
   // 351 + nove dígitos nacionais
   return digits.length === 12 ? digits : null;
 }
+
+/**
+ * Preço arredondado para texto de apresentação: "6 mil euros" em vez de "6001 €".
+ * Só arredonda para baixo e quando o valor está a menos de 100 € do milhar, para
+ * nunca anunciar um tecto maior do que o real. Onde o número é uma regra que o
+ * stand tem de cumprir, usa-se formatPrice, que não arredonda.
+ */
+export function formatPriceRounded(value: number): string {
+  const milhares = Math.floor(value / 1000);
+  if (milhares >= 1 && value - milhares * 1000 <= 100) {
+    return `${milhares} mil euros`;
+  }
+  return formatPrice(value);
+}

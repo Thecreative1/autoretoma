@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { ListingCard } from "@/components/ListingCard";
 import { getRecentListings, getSettings } from "@/lib/queries";
-import { formatPrice } from "@/lib/utils";
+import { formatPriceRounded } from "@/lib/utils";
 import { SITE_URL } from "@/lib/constants";
 
 export const metadata: Metadata = {
@@ -59,7 +59,7 @@ export default async function HomePage() {
         <div className="container-site grid gap-10 py-16 lg:grid-cols-2 lg:items-center lg:py-24">
           <div>
             <p className="mb-4 inline-flex rounded-full bg-brand-900 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-accent-400">
-              Retomas e carros até {formatPrice(settings.max_price_eur)}
+              Retomas e carros até {formatPriceRounded(settings.max_price_eur)}
             </p>
             <h1 className="font-heading text-4xl font-extrabold leading-[1.1] tracking-tight sm:text-5xl lg:text-6xl">
               Carros baratos, sem surpresas escondidas.
