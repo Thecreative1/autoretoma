@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
-import { AREA_LABELS, LISTING_STATUS_META, SEVERITY_META } from "@/lib/constants";
+import { AREA_LABELS, LISTING_STATUS_META, SEVERITY_META, photoLabel } from "@/lib/constants";
 import { firstParam, formatMileage, formatNumber, formatPrice } from "@/lib/utils";
 import { moderateListing, toggleFeatured } from "../actions";
 import type { ListingIssue, ListingPhoto, ListingStatus } from "@/lib/types";
@@ -143,17 +143,24 @@ export default async function AdminListingsPage({ searchParams }: { searchParams
 
                 {photos.length > 0 && (
                   <ul className="mt-3 flex gap-2 overflow-x-auto pb-1">
-                    {photos.slice(0, 10).map((p) => (
-                      <li
-                        key={p.id}
-                        className="relative h-20 w-28 shrink-0 overflow-hidden rounded-lg bg-brand-100"
-                      >
-                        <Image src={p.url} alt="" fill sizes="112px" className="object-cover" />
-                        {p.is_defect && (
-                          <span className="absolute inset-x-0 bottom-0 bg-accent-500 px-1 py-0.5 text-[10px] font-bold text-white">
-                            Defeito
-                          </span>
-                        )}
+                    {/* A etiqueta é o que se modera: sem ela não há como ver se a
+                        fotografia corresponde à categoria que o stand lhe deu. */}
+                    {photos.map((p) => (
+                      <li key={p.id} className="w-28 shrink-0">
+                        <div className="relative h-20 w-28 overflow-hidden rounded-lg bg-brand-100">
+                          <Image src={p.url} alt="" fill sizes="112px" className="object-cover" />
+                          {p.is_defect && (
+                            <span className="absolute inset-x-0 bottom-0 bg-accent-500 px-1 py-0.5 text-[10px] font-bold text-white">
+                              Defeito
+                            </span>
+                          )}
+                        </div>
+                        <p
+                          className="mt-1 truncate text-[11px] leading-tight text-brand-600"
+                          title={photoLabel(p)}
+                        >
+                          {photoLabel(p)}
+                        </p>
                       </li>
                     ))}
                   </ul>
