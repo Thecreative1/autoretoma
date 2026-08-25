@@ -78,6 +78,117 @@ export async function setStandStatus(formData: FormData) {
   revalidatePath("/carros");
 }
 
+/**
+ * Converte URLs públicos em caminhos do bucket e remove os ficheiros.
+ * Devolve quantos ficheiros ficaram por remover.
+ */
+async function removeStoredFiles(
+  admin: ReturnType<typeof createAdminClient>,
+  bucket: string,
+  urls: (string | null)[]
+): Promise<number> {
+  const marker = `/storage/v1/object/public/${bucket}/`;
+  const paths = urls
+    .map((url) => url?.split(marker)[1])
+    .filter((path): path is string => Boolean(path))
+    .map((path) => decodeURIComponent(path));
+
+  let failed = 0;
+  // A API de remoção tem limite por pedido, daí os lotes.
+  for (let i = 0; i < paths.length; i += 100) {
+    const batch = paths.slice(i, i + 100);
+    const { error } = await admin.storage.from(bucket).remove(batch);
+    if (error) {
+      console.error(`removeStoredFiles (${bucket}):`, error.message);
+      failed += batch.length;
+    }
+  }
+  return failed;
+}
+
+/**
+ * Remove um stand por inteiro: conta de acesso, anúncios, fotografias, estado
+ * declarado, defeitos e pedidos de contacto. Não tem retrocesso — ao contrário de
+ * suspender ou rejeitar, que preservam os dados. Exige o stand suspenso.
+ */
+export async function deleteStand(formData: FormData): Promise<AdminState> {
+  const user = await requireAdminUser();
+  const standId = String(formData.get("stand_id") ?? "");
+
+  const admin = createAdminClient();
+  const { data: stand } = await admin
+    .from("stands")
+    .select("id, owner_id, commercial_name, company_name, nif, email, status, logo_url")
+    .eq("id", standId)
+    .maybeSingle();
+
+  if (!stand) return { ok: false, message: "Stand não encontrado. Talvez já tenha sido removido." };
+
+  // Suspender primeiro é o que separa a remoção de um clique enganado: obriga a uma
+  // decisão anterior, já registada, e tira os anúncios de circulação antes de apagar.
+  if (stand.status !== "suspenso") {
+    return {
+      ok: false,
+      message: "Só se remove um stand suspenso. Suspenda-o primeiro e volte a tentar.",
+    };
+  }
+
+  const [{ data: listings }, { count: leadCount }] = await Promise.all([
+    admin.from("listings").select("id").eq("stand_id", standId),
+    admin.from("leads").select("id", { count: "exact", head: true }).eq("stand_id", standId),
+  ]);
+  const listingIds = (listings ?? []).map((l) => l.id);
+
+  const { data: photos } = listingIds.length
+    ? await admin.from("listing_photos").select("url").in("listing_id", listingIds)
+    : { data: [] as { url: string }[] };
+
+  // A base de dados primeiro. Se falhar, os ficheiros continuam a corresponder ao
+  // que lá está; pela ordem inversa ficariam anúncios a apontar para imagens mortas.
+  const { error: userError } = await admin.auth.admin.deleteUser(stand.owner_id);
+  if (userError) {
+    // A conta de acesso pode já não existir; o stand tem de sair na mesma.
+    const { error: standError } = await admin.from("stands").delete().eq("id", standId);
+    if (standError) {
+      console.error("deleteStand:", userError.message, standError.message);
+      return {
+        ok: false,
+        message: "Não foi possível remover o stand. Não foi apagado nada.",
+      };
+    }
+  }
+
+  // Só depois de a remoção passar. O que o registo guarda já está lido acima, por
+  // isso não se perde nada por esperar — e o log não fica com remoções que falharam.
+  await audit(user.id, "stand_removido", "stand", standId, {
+    commercial_name: stand.commercial_name,
+    company_name: stand.company_name,
+    nif: stand.nif,
+    email: stand.email,
+    status: stand.status,
+    anuncios: listingIds.length,
+    contactos: leadCount ?? 0,
+    fotografias: photos?.length ?? 0,
+  });
+
+  const orphans =
+    (await removeStoredFiles(admin, "listings", (photos ?? []).map((p) => p.url))) +
+    (await removeStoredFiles(admin, "logos", [stand.logo_url]));
+
+  revalidatePath("/admin/stands");
+  revalidatePath("/admin");
+  revalidatePath("/admin/registo");
+  revalidatePath("/carros");
+
+  return {
+    ok: true,
+    message:
+      `Stand "${stand.commercial_name}" removido, com ${listingIds.length} anúncio(s) e ` +
+      `${leadCount ?? 0} pedido(s) de contacto.` +
+      (orphans > 0 ? ` ${orphans} ficheiro(s) ficaram no armazenamento e precisam de limpeza manual.` : ""),
+  };
+}
+
 // ------------------------------------------------------------
 // Anúncios: moderação
 // ------------------------------------------------------------

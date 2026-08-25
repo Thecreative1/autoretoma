@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { STAND_STATUS_META } from "@/lib/constants";
 import { firstParam, formatDate } from "@/lib/utils";
 import { setStandStatus } from "../actions";
+import { DeleteStand } from "./DeleteStand";
 import type { Stand, StandStatus } from "@/lib/types";
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
@@ -22,12 +23,15 @@ export default async function AdminStandsPage({ searchParams }: { searchParams: 
   const supabase = await createClient();
   let query = supabase
     .from("stands")
-    .select("*, listings(id)")
+    .select("*, listings(id), leads(id)")
     .order("created_at", { ascending: false });
   if (filter) query = query.eq("status", filter as StandStatus);
 
   const { data } = await query;
-  const stands = (data ?? []) as unknown as (Stand & { listings: { id: string }[] })[];
+  const stands = (data ?? []) as unknown as (Stand & {
+    listings: { id: string }[];
+    leads: { id: string }[];
+  })[];
 
   return (
     <div className="space-y-6">
@@ -161,6 +165,16 @@ export default async function AdminStandsPage({ searchParams }: { searchParams: 
                       <button type="submit" name="status" value="pendente" className="btn-outline px-4 py-2 text-xs">
                         Voltar a pendente
                       </button>
+                    )}
+                    {/* Remover só depois de suspender: obriga a uma decisão anterior e
+                        tira os anúncios de circulação antes de apagar seja o que for. */}
+                    {stand.status === "suspenso" && (
+                      <DeleteStand
+                        standId={stand.id}
+                        commercialName={stand.commercial_name}
+                        listingCount={stand.listings.length}
+                        leadCount={stand.leads.length}
+                      />
                     )}
                   </div>
                 </form>
