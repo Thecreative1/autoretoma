@@ -164,6 +164,8 @@ export interface ListingPhoto {
   listing_id: string;
   url: string;
   category: PhotoCategory;
+  /** Legenda curta escrita pelo stand. Usada nas fotografias "Outra". */
+  caption: string | null;
   is_defect: boolean;
   sort_order: number;
 }

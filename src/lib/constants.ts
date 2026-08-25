@@ -177,6 +177,19 @@ export const PHOTO_CATEGORY_LABELS = Object.fromEntries(
   PHOTO_CATEGORIES.map((c) => [c.value, c.label])
 ) as Record<PhotoCategory, string>;
 
+/** Categorias em que a legenda do stand acrescenta informação ao comprador. */
+export const PHOTO_CAPTION_CATEGORIES: PhotoCategory[] = ["outra"];
+
+export const PHOTO_CAPTION_MAX = 80;
+
+/** O que o comprador lê por baixo da fotografia: a legenda do stand, se existir. */
+export function photoLabel(photo: {
+  category: PhotoCategory;
+  caption?: string | null;
+}): string {
+  return photo.caption?.trim() || PHOTO_CATEGORY_LABELS[photo.category];
+}
+
 export const SORT_OPTIONS = [
   { value: "recentes", label: "Mais recentes" },
   { value: "preco_asc", label: "Preço mais baixo" },

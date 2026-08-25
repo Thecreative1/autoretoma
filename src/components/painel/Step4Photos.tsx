@@ -5,9 +5,19 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { addPhoto, deletePhoto } from "@/app/painel/anuncios/actions";
+import {
+  addPhoto,
+  deletePhoto,
+  updatePhotoCaption,
+  updatePhotoCategory,
+} from "@/app/painel/anuncios/actions";
 import { compressImage, validateImage } from "@/lib/image";
-import { PHOTO_CATEGORIES, PHOTO_CATEGORY_LABELS } from "@/lib/constants";
+import {
+  PHOTO_CAPTION_CATEGORIES,
+  PHOTO_CAPTION_MAX,
+  PHOTO_CATEGORIES,
+  PHOTO_CATEGORY_LABELS,
+} from "@/lib/constants";
 import type { ListingPhoto, PhotoCategory } from "@/lib/types";
 
 export function Step4Photos({
@@ -31,6 +41,13 @@ export function Step4Photos({
   const present = new Set(photos.map((p) => p.category));
   const missingRequired = PHOTO_CATEGORIES.filter((c) => c.required && !present.has(c.value));
 
+  // Cada categoria obrigatória é uma vista única do carro, por isso recebe uma única
+  // fotografia de cada vez. É a própria escolha do ficheiro que a etiqueta, e não há
+  // hipótese de um lote inteiro sair com a mesma categoria — nem de o stand ter de
+  // corrigir etiquetas depois. "Defeito" e "Outra" são naturalmente plurais e aceitam
+  // vários ficheiros.
+  const requiredSelected = PHOTO_CATEGORIES.some((c) => c.value === category && c.required);
+
   async function handleFiles(files: FileList | null) {
     if (!files || files.length === 0) return;
     setError(null);
@@ -39,8 +56,17 @@ export function Step4Photos({
     const supabase = createClient();
     const uploaded: PhotoCategory[] = [];
 
+    // O input já impede a seleção múltipla nas categorias obrigatórias; isto garante
+    // o mesmo se o ficheiro chegar por outro caminho (arrastar, browser permissivo).
+    const chosen = requiredSelected ? Array.from(files).slice(0, 1) : Array.from(files);
+    if (requiredSelected && files.length > 1) {
+      setError(
+        `${PHOTO_CATEGORY_LABELS[category]} leva uma só fotografia. Foi guardada a primeira que escolheu.`
+      );
+    }
+
     try {
-      for (const file of Array.from(files)) {
+      for (const file of chosen) {
         const validationError = validateImage(file);
         if (validationError) {
           setError(validationError);
@@ -87,6 +113,29 @@ export function Step4Photos({
       setUploading(false);
       if (inputRef.current) inputRef.current.value = "";
     }
+  }
+
+  async function handleCategoryChange(photoId: string, next: PhotoCategory) {
+    setError(null);
+    const fd = new FormData();
+    fd.set("listing_id", listingId);
+    fd.set("photo_id", photoId);
+    fd.set("category", next);
+    const result = await updatePhotoCategory(fd);
+    if (!result.ok && result.message) setError(result.message);
+    startTransition(() => router.refresh());
+  }
+
+  async function handleCaptionBlur(photo: ListingPhoto, next: string) {
+    if (next.trim() === (photo.caption ?? "").trim()) return;
+    setError(null);
+    const fd = new FormData();
+    fd.set("listing_id", listingId);
+    fd.set("photo_id", photo.id);
+    fd.set("caption", next);
+    const result = await updatePhotoCaption(fd);
+    if (!result.ok && result.message) setError(result.message);
+    startTransition(() => router.refresh());
   }
 
   const busy = uploading || isPending;
@@ -153,7 +202,7 @@ export function Step4Photos({
               id="photo-input"
               type="file"
               accept="image/jpeg,image/png,image/webp"
-              multiple
+              multiple={!requiredSelected}
               disabled={busy}
               onChange={(e) => handleFiles(e.target.files)}
               className="block w-full text-sm text-brand-700 file:mr-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-accent-500 file:px-4 file:py-2.5 file:text-sm file:font-semibold file:text-white hover:file:bg-accent-600 disabled:opacity-60"
@@ -163,7 +212,10 @@ export function Step4Photos({
 
         <p className="mt-2 text-xs text-brand-500">
           JPEG, PNG ou WebP até 5 MB. As imagens são redimensionadas automaticamente antes
-          do envio.
+          do envio.{" "}
+          {requiredSelected
+            ? "As fotografias obrigatórias entram uma de cada vez: escolha o ficheiro certo para esta categoria e o seletor avança sozinho para a seguinte."
+            : "Nesta categoria pode escolher vários ficheiros de uma vez."}
         </p>
 
         {busy && (
@@ -190,11 +242,41 @@ export function Step4Photos({
                   </span>
                 )}
               </div>
-              <div className="flex items-center justify-between gap-2 p-2.5">
-                <span className="truncate text-xs font-medium text-brand-700">
-                  {PHOTO_CATEGORY_LABELS[photo.category]}
-                </span>
-                <form action={deletePhoto}>
+              <div className="space-y-2 p-2.5">
+                <label htmlFor={`categoria-${photo.id}`} className="sr-only">
+                  Categoria desta fotografia
+                </label>
+                <select
+                  id={`categoria-${photo.id}`}
+                  className="input px-2 py-1.5 text-xs"
+                  value={photo.category}
+                  disabled={busy}
+                  onChange={(e) => handleCategoryChange(photo.id, e.target.value as PhotoCategory)}
+                >
+                  {PHOTO_CATEGORIES.map((c) => (
+                    <option key={c.value} value={c.value}>
+                      {c.label}
+                    </option>
+                  ))}
+                </select>
+                {PHOTO_CAPTION_CATEGORIES.includes(photo.category) && (
+                  <>
+                    <label htmlFor={`legenda-${photo.id}`} className="sr-only">
+                      O que mostra esta fotografia
+                    </label>
+                    <input
+                      id={`legenda-${photo.id}`}
+                      type="text"
+                      className="input px-2 py-1.5 text-xs"
+                      defaultValue={photo.caption ?? ""}
+                      maxLength={PHOTO_CAPTION_MAX}
+                      disabled={busy}
+                      placeholder="O que mostra? Ex.: Porta-bagagens"
+                      onBlur={(e) => handleCaptionBlur(photo, e.target.value)}
+                    />
+                  </>
+                )}
+                <form action={deletePhoto} className="text-right">
                   <input type="hidden" name="listing_id" value={listingId} />
                   <input type="hidden" name="photo_id" value={photo.id} />
                   <button

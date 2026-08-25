@@ -12,7 +12,12 @@ import {
   listingStep5Schema,
 } from "@/lib/validation";
 import { buildListingSlug } from "@/lib/utils";
-import { CONDITION_AREAS } from "@/lib/constants";
+import {
+  CONDITION_AREAS,
+  PHOTO_CAPTION_CATEGORIES,
+  PHOTO_CAPTION_MAX,
+  PHOTO_CATEGORIES,
+} from "@/lib/constants";
 import type { ConditionStatus, ListingStatus } from "@/lib/types";
 
 export interface ActionState {
@@ -281,6 +286,63 @@ export async function addPhoto(formData: FormData): Promise<ActionState> {
   return { ok: true };
 }
 
+/** Corrige a categoria de uma fotografia já carregada, sem obrigar a remover e voltar a enviar. */
+export async function updatePhotoCategory(formData: FormData): Promise<ActionState> {
+  const listingId = String(formData.get("listing_id") ?? "");
+  const photoId = String(formData.get("photo_id") ?? "");
+  const category = String(formData.get("category") ?? "");
+  if (!PHOTO_CATEGORIES.some((c) => c.value === category)) {
+    return { ok: false, message: "Categoria de fotografia desconhecida." };
+  }
+
+  const { supabase } = await assertOwnership(listingId);
+  const patch: { category: string; is_defect: boolean; caption?: null } = {
+    category,
+    is_defect: category === "defeito",
+  };
+  // Uma legenda presa a uma categoria que já não a mostra ficaria a mentir em silêncio.
+  if (!PHOTO_CAPTION_CATEGORIES.some((c) => c === category)) patch.caption = null;
+
+  const { error } = await supabase
+    .from("listing_photos")
+    .update(patch)
+    .eq("id", photoId)
+    .eq("listing_id", listingId);
+  if (error) {
+    return { ok: false, message: "Não foi possível alterar a categoria da fotografia. Tente outra vez." };
+  }
+
+  revalidatePath(`/painel/anuncios/${listingId}`);
+  return { ok: true };
+}
+
+/** Guarda a legenda de uma fotografia "Outra", que sem ela nada diz ao comprador. */
+export async function updatePhotoCaption(formData: FormData): Promise<ActionState> {
+  const listingId = String(formData.get("listing_id") ?? "");
+  const photoId = String(formData.get("photo_id") ?? "");
+  const raw = String(formData.get("caption") ?? "").trim();
+
+  if (raw.length > PHOTO_CAPTION_MAX) {
+    return { ok: false, message: `A legenda não pode ter mais de ${PHOTO_CAPTION_MAX} caracteres.` };
+  }
+  if (raw.length > 0 && raw.length < 2) {
+    return { ok: false, message: "A legenda é demasiado curta para dizer alguma coisa." };
+  }
+
+  const { supabase } = await assertOwnership(listingId);
+  const { error } = await supabase
+    .from("listing_photos")
+    .update({ caption: raw === "" ? null : raw })
+    .eq("id", photoId)
+    .eq("listing_id", listingId);
+  if (error) {
+    return { ok: false, message: "Não foi possível guardar a legenda. Tente outra vez." };
+  }
+
+  revalidatePath(`/painel/anuncios/${listingId}`);
+  return { ok: true };
+}
+
 export async function deletePhoto(formData: FormData) {
   const listingId = String(formData.get("listing_id") ?? "");
   const photoId = String(formData.get("photo_id") ?? "");
@@ -452,7 +514,7 @@ export async function duplicateListing(formData: FormData) {
       .eq("listing_id", listingId),
     supabase
       .from("listing_photos")
-      .select("url, category, is_defect, sort_order")
+      .select("url, category, caption, is_defect, sort_order")
       .eq("listing_id", listingId),
   ]);
 

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import type { ListingPhoto } from "@/lib/types";
-import { PHOTO_CATEGORY_LABELS } from "@/lib/constants";
+import { photoLabel } from "@/lib/constants";
 
 export function Gallery({ photos, title }: { photos: ListingPhoto[]; title: string }) {
   const [index, setIndex] = useState(0);
@@ -47,7 +47,7 @@ export function Gallery({ photos, title }: { photos: ListingPhoto[]; title: stri
         <div className="relative aspect-[4/3] overflow-hidden rounded-card bg-brand-100">
           <Image
             src={current.url}
-            alt={`${title} — ${PHOTO_CATEGORY_LABELS[current.category]}${
+            alt={`${title} — ${photoLabel(current)}${
               current.is_defect ? " (fotografia de defeito)" : ""
             }`}
             fill
@@ -93,6 +93,10 @@ export function Gallery({ photos, title }: { photos: ListingPhoto[]; title: stri
           )}
         </div>
 
+        {current.caption && (
+          <p className="mt-2 text-sm text-brand-600">{current.caption}</p>
+        )}
+
         <ul className="mt-3 grid grid-cols-4 gap-2 sm:grid-cols-6">
           {photos.map((photo, i) => (
             <li key={photo.id}>
@@ -100,7 +104,7 @@ export function Gallery({ photos, title }: { photos: ListingPhoto[]; title: stri
                 type="button"
                 onClick={() => setIndex(i)}
                 aria-current={i === index ? "true" : undefined}
-                aria-label={`Ver ${PHOTO_CATEGORY_LABELS[photo.category]}${
+                aria-label={`Ver ${photoLabel(photo)}${
                   photo.is_defect ? " (defeito)" : ""
                 }`}
                 className={`relative block aspect-[4/3] w-full overflow-hidden rounded-lg border-2 transition-colors ${
@@ -138,7 +142,7 @@ export function Gallery({ photos, title }: { photos: ListingPhoto[]; title: stri
         >
           <div className="flex items-center justify-between p-4 text-white">
             <p className="text-sm">
-              {index + 1} / {photos.length} — {PHOTO_CATEGORY_LABELS[current.category]}
+              {index + 1} / {photos.length} — {photoLabel(current)}
               {current.is_defect && " · Fotografia de defeito"}
             </p>
             <button
@@ -152,7 +156,7 @@ export function Gallery({ photos, title }: { photos: ListingPhoto[]; title: stri
           <div className="relative flex-1">
             <Image
               src={current.url}
-              alt={`${title} — ${PHOTO_CATEGORY_LABELS[current.category]}`}
+              alt={`${title} — ${photoLabel(current)}`}
               fill
               sizes="100vw"
               className="object-contain"
