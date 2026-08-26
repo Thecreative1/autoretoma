@@ -14,12 +14,19 @@ export interface LeadState {
 
 /** Hash do IP com sal, para limitar pedidos repetidos sem guardar o IP em claro. */
 async function hashIp(): Promise<string> {
+  // Sem um sal próprio o hash seria reversível — o espaço de endereços IPv4
+  // percorre-se por força bruta em segundos. Preferimos falhar a gravar
+  // pseudónimos que não protegem o IP de quem envia o pedido.
+  const salt = process.env.LEAD_IP_SALT;
+  if (!salt) {
+    throw new Error("LEAD_IP_SALT não está definida.");
+  }
+
   const h = await headers();
   const ip =
     h.get("x-forwarded-for")?.split(",")[0]?.trim() ??
     h.get("x-real-ip") ??
     "desconhecido";
-  const salt = process.env.LEAD_IP_SALT ?? "autoretoma";
   return createHash("sha256").update(`${salt}:${ip}`).digest("hex");
 }
 
@@ -47,7 +54,14 @@ export async function submitLead(_prev: LeadState, formData: FormData): Promise<
   }
 
   const supabase = createAdminClient();
-  const ipHash = await hashIp();
+
+  let ipHash: string;
+  try {
+    ipHash = await hashIp();
+  } catch (err) {
+    console.error("submitLead:", err instanceof Error ? err.message : err);
+    return { ok: false, message: "Não foi possível enviar o pedido. Tente novamente." };
+  }
 
   // Limite por IP na última hora
   const oneHourAgo = new Date(Date.now() - 3_600_000).toISOString();
