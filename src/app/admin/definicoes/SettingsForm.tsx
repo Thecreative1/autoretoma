@@ -33,7 +33,7 @@ export function SettingsForm({ settings }: { settings: PlatformSettings }) {
       <div>
         <label htmlFor="max_price_eur" className="label">Preço máximo por anúncio (€)</label>
         <input
-          id="max_price_eur" name="max_price_eur" type="number" required min={1} step={100}
+          id="max_price_eur" name="max_price_eur" type="number" required min={100} step={100}
           className="input sm:max-w-xs" defaultValue={settings.max_price_eur}
         />
         <p className="mt-1 text-xs text-brand-500">
