@@ -1,4 +1,5 @@
 import { OPERATOR, OPERATOR_IDENTIFIED, SITE_EMAIL, SITE_NAME, SITE_URL } from "@/lib/constants";
+import { jsonLdHtml } from "@/lib/utils";
 
 /**
  * Dados estruturados de âmbito global (Organization + WebSite), injetados uma
@@ -56,7 +57,7 @@ export function StructuredData() {
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      dangerouslySetInnerHTML={{ __html: jsonLdHtml(jsonLd) }}
     />
   );
 }

@@ -19,6 +19,7 @@ import {
   formatNumber,
   formatPrice,
   isInspectionValid,
+  jsonLdHtml,
 } from "@/lib/utils";
 
 type Params = Promise<{ slug: string }>;
@@ -190,11 +191,11 @@ export default async function ListingPage({ params }: { params: Params }) {
     <div className="container-site py-6 lg:py-10">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdHtml(jsonLd) }}
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdHtml(breadcrumbLd) }}
       />
 
       <nav aria-label="Caminho" className="mb-5 text-sm text-brand-500">

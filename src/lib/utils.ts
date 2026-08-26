@@ -122,3 +122,20 @@ export function formatPriceRounded(value: number): string {
   }
   return formatPrice(value);
 }
+
+/**
+ * Serializa um objeto para injeção segura num <script type="application/ld+json">.
+ * O JSON.stringify não escapa `<`, `>` nem `&`, pelo que um texto controlado pelo
+ * utilizador (descrição, nome do stand...) com `</script>` sairia do bloco e
+ * executaria como HTML. Escapamos esses caracteres — e os separadores de linha
+ * U+2028/U+2029, inválidos em JS — para as suas sequências \uXXXX. O parser de
+ * JSON-LD descodifica-as de volta, por isso os dados lidos ficam idênticos.
+ */
+export function jsonLdHtml(data: unknown): string {
+  return JSON.stringify(data)
+    .replace(/</g, "\u003c")
+    .replace(/>/g, "\u003e")
+    .replace(/&/g, "\u0026")
+    .replace(/\u2028/g, "\u2028")
+    .replace(/\u2029/g, "\u2029");
+}
